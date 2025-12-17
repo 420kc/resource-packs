@@ -25,6 +25,7 @@
 package melky.resourcepacks.model;
 
 import com.google.common.collect.ImmutableSetMultimap;
+import java.nio.file.Path;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import net.runelite.api.gameval.SpriteID;
@@ -2148,6 +2149,12 @@ public enum SpriteOverride
 	SpriteOverride(int spriteID, Folder folder)
 	{
 		this(spriteID, -1, folder);
+	}
+
+	public Path toPath()
+	{
+		var folder = getFolder().toString().toLowerCase();
+		return Path.of(folder, toString().toLowerCase().replaceFirst(folder.toLowerCase() + "_", "") + ".png");
 	}
 
 

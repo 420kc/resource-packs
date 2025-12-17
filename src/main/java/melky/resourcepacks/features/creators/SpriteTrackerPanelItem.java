@@ -27,9 +27,14 @@ package melky.resourcepacks.features.creators;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.event.ChangeListener;
 import lombok.Getter;
 import lombok.Setter;
 import melky.resourcepacks.model.SpriteOverride;
@@ -38,43 +43,53 @@ import net.runelite.client.ui.ColorScheme;
 @Getter
 public class SpriteTrackerPanelItem extends JPanel
 {
-	private final SpriteOverride sprite;
-	@Setter
-	private boolean visible;
+	@Getter
+	private final SpriteTracker.HighlightOptions options;
 
 	private final JLabel nameLabel;
 	private final JCheckBox visibleCheckbox;
+	private final JPanel toolbarPanel;
 
-	public SpriteTrackerPanelItem(SpriteOverride sprite, boolean visible)
+	public SpriteTrackerPanelItem(SpriteTracker.HighlightOptions options)
 	{
-		this.sprite = sprite;
-		this.visible = visible;
+		this.options = options;
+		var visible = options.isVisible();
 
 		setLayout(new BorderLayout());
-		setBackground(visible ? ColorScheme.DARKER_GRAY_COLOR : new Color(60, 60, 60));
-		setMaximumSize(new java.awt.Dimension(Integer.MAX_VALUE, 30));
-		setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 5, 2, 5));
+		setBackground(visible ? ColorScheme.DARKER_GRAY_COLOR : ColorScheme.MEDIUM_GRAY_COLOR);
+		setMaximumSize(new Dimension(Integer.MAX_VALUE, 60)); // Increased height for toolbar
+		setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
 
-		nameLabel = new JLabel(sprite.name() + " (" + sprite.getSpriteID() + ")");
-		nameLabel.setForeground(visible ? Color.WHITE : Color.GRAY);
+		// Main content panel
+		JPanel contentPanel = new JPanel(new BorderLayout());
+		contentPanel.setBackground(getBackground());
+		contentPanel.setOpaque(false);
+
+		nameLabel = new JLabel(options.getOverride().toPath() + "");
+		nameLabel.setForeground(options.getColor());
+
+		contentPanel.add(nameLabel, BorderLayout.CENTER);
+
+		toolbarPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 0));
+		toolbarPanel.setBackground(getBackground());
+		toolbarPanel.setOpaque(false);
+		toolbarPanel.setBorder(BorderFactory.createEmptyBorder(2, 5, 0, 0));
 
 		visibleCheckbox = new JCheckBox("", visible);
 		visibleCheckbox.setBackground(getBackground());
 		visibleCheckbox.setFocusPainted(false);
-
-		add(nameLabel, BorderLayout.CENTER);
-		add(visibleCheckbox, BorderLayout.EAST);
-	}
-
-	public void setVisible(boolean visible, boolean updateCheckbox)
-	{
-		this.visible = visible;
-		setBackground(visible ? ColorScheme.DARKER_GRAY_COLOR : new Color(60, 60, 60));
-		nameLabel.setForeground(visible ? Color.WHITE : Color.GRAY);
-
-		if (updateCheckbox)
+		visibleCheckbox.addChangeListener((c) ->
 		{
-			visibleCheckbox.setSelected(visible);
-		}
+			var v = visibleCheckbox.isSelected();
+			options.setVisible(v);
+			setBackground(v ? ColorScheme.DARKER_GRAY_COLOR : ColorScheme.MEDIUM_GRAY_COLOR);
+			contentPanel.setBackground(getBackground());
+			toolbarPanel.setBackground(getBackground());
+		});
+
+		toolbarPanel.add(visibleCheckbox);
+
+		add(contentPanel, BorderLayout.NORTH);
+		add(toolbarPanel, BorderLayout.CENTER);
 	}
 }

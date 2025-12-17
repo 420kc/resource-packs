@@ -26,27 +26,31 @@
 package melky.resourcepacks.features.creators;
 
 import java.awt.Color;
-import java.util.EnumMap;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import melky.resourcepacks.ResourcePacksConfig;
+import melky.resourcepacks.features.creators.events.TrackerBuilt;
 import melky.resourcepacks.features.state.LocalConfig;
 import melky.resourcepacks.model.SpriteOverride;
 import melky.resourcepacks.module.PluginLifecycleComponent;
 import net.runelite.api.Client;
-import net.runelite.api.events.GameTick;
+import net.runelite.api.events.PostClientTick;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetType;
+import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.eventbus.Subscribe;
 
 @Singleton
@@ -63,15 +67,31 @@ public class SpriteTracker implements PluginLifecycleComponent
 
 	@Data
 	@AllArgsConstructor
-	public static class HighlightOptions
+	public static class HighlightOptions implements Comparable<HighlightOptions>
 	{
+		private int spriteId;
+
+		@EqualsAndHashCode.Exclude
 		private SpriteOverride override;
+
+		@EqualsAndHashCode.Exclude
 		private Color color;
+
+		@EqualsAndHashCode.Exclude
 		private boolean visible;
+
+		@Override
+		public int compareTo(HighlightOptions o1)
+		{
+			return override.toPath().compareTo(o1.getOverride().toPath());
+		}
 	}
 
 	@Inject
 	private Client client;
+
+	@Inject
+	private EventBus eventBus;
 
 	@Getter
 	private final Set<Widget> widgets = new LinkedHashSet<>();
@@ -82,6 +102,7 @@ public class SpriteTracker implements PluginLifecycleComponent
 	private final Map<Integer, SpriteOverride> spriteOverrides = new HashMap<>();
 
 	private int ticksSince = 0;
+	private boolean newHighlights = false;
 
 
 	@Override
@@ -105,7 +126,8 @@ public class SpriteTracker implements PluginLifecycleComponent
 			if (!highlights.containsKey(key))
 			{
 				var override = spriteOverrides.get(key);
-				highlights.put(key, new HighlightOptions(override, getColorFromHashCode(override), true));
+				highlights.put(key, new HighlightOptions(key, override, getColorFromHashCode(override), true));
+				newHighlights = true;
 			}
 		}
 	}
@@ -149,11 +171,12 @@ public class SpriteTracker implements PluginLifecycleComponent
 	{
 		widgets.clear();
 		spriteOverrides.clear();
+		newHighlights = false;
 	}
 
 
 	@Subscribe
-	public void onGameTick(GameTick event)
+	public void onPostClientTick(PostClientTick event)
 	{
 		if (ticksSince++ < 5)
 		{
@@ -167,6 +190,20 @@ public class SpriteTracker implements PluginLifecycleComponent
 		{
 			walkWidget(w);
 		}
+
+		if (newHighlights)
+		{
+			eventBus.post(new TrackerBuilt());
+			newHighlights = false;
+		}
+	}
+
+	public List<HighlightOptions> getHighlightList()
+	{
+		return getHighlights().values()
+			.stream()
+			.sorted()
+			.collect(Collectors.toCollection(ArrayList::new));
 	}
 
 	private void walkWidget(Widget parent)

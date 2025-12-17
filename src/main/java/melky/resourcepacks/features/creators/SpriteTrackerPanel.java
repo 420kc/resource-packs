@@ -25,11 +25,20 @@
 
 package melky.resourcepacks.features.creators;
 
+import com.google.common.collect.Comparators;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -44,11 +53,13 @@ import lombok.extern.slf4j.Slf4j;
 import melky.resourcepacks.model.SpriteOverride;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
+import net.runelite.client.util.SwingUtil;
 
 @Slf4j
 public class SpriteTrackerPanel extends PluginPanel
 {
 	private final SpriteTracker spriteTracker;
+	private final Set<Integer> storedSprites = new HashSet<>();
 
 	private boolean showAllSprites = true;
 	private JPanel spriteListPanel;
@@ -126,19 +137,16 @@ public class SpriteTrackerPanel extends PluginPanel
 		return panel;
 	}
 
-	private void updateSpriteList()
+	public void updateSpriteList()
 	{
 		spriteListPanel.removeAll();
 
-		for (SpriteOverride sprite : SpriteOverride.values())
-		{
-			SpriteTrackerPanelItem item = new SpriteTrackerPanelItem(sprite, true);
-			item.getVisibleCheckbox().addActionListener(e -> {
-				boolean selected = item.getVisibleCheckbox().isSelected();
-				item.setVisible(selected, false);
-			});
 
+		for (var highlight : spriteTracker.getHighlightList())
+		{
+			SpriteTrackerPanelItem item = new SpriteTrackerPanelItem(highlight);
 			spriteListPanel.add(item);
+			storedSprites.add(highlight.getSpriteId());
 		}
 
 		spriteListPanel.revalidate();
@@ -164,5 +172,35 @@ public class SpriteTrackerPanel extends PluginPanel
 	public void onDeactivate()
 	{
 		// Panel deactivated
+	}
+
+	void rebuild()
+	{
+		var highlights = spriteTracker.getHighlightList();
+		for (var highlight: highlights)
+		{
+			if (storedSprites.contains(highlight.getSpriteId()))
+			{
+				continue;
+			}
+
+
+			var insertIdx = highlights.indexOf(highlight);
+			storedSprites.add(highlight.getSpriteId());
+
+			var item = new SpriteTrackerPanelItem(spriteTracker.getHighlights().get(highlight.getSpriteId()));
+			spriteListPanel.add(item, insertIdx);
+		}
+
+
+		spriteListPanel.revalidate();
+		spriteListPanel.repaint();
+	}
+
+	void clear()
+	{
+		spriteListPanel.removeAll();
+		spriteListPanel.revalidate();
+		spriteListPanel.repaint();
 	}
 }

@@ -182,9 +182,10 @@ public class CreatorToolsPanel extends PluginPanel
 		}
 	}
 
+
 	@Subscribe
 	public void onTrackerBuilt(TrackerBuilt event)
 	{
-		// Handle config changes if needed
+		spriteTrackerPanel.rebuild();
 	}
 }
