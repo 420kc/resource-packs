@@ -113,8 +113,8 @@ public class ResourcePacksModule extends AbstractModule
 			.add(chatColorOverride)
 			.add(showSkillGlow)
 			.add(gameFrameOverride)
-			.add(spriteTracker)
 			.add(creatorToolsModule)
+			.add(spriteTracker)
 			.add(spriteOverlay)
 			.add(packReader);
 

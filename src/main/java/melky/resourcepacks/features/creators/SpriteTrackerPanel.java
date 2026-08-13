@@ -79,7 +79,7 @@ public class SpriteTrackerPanel extends PluginPanel
 		add(createSpriteListPanel(), BorderLayout.CENTER);
 
 		// Initialize visibility for all sprites
-		updateAllSpriteVisibility();
+		updateAllSpriteVisibility(showAllSprites);
 		updateSpriteList();
 	}
 
@@ -96,7 +96,7 @@ public class SpriteTrackerPanel extends PluginPanel
 		toggleAllButton.addActionListener(e -> {
 			showAllSprites = !showAllSprites;
 			toggleAllButton.setText(showAllSprites ? "Hide All" : "Show All");
-			updateAllSpriteVisibility();
+			updateAllSpriteVisibility(showAllSprites);
 			updateSpriteList();
 		});
 
@@ -153,8 +153,12 @@ public class SpriteTrackerPanel extends PluginPanel
 		spriteListPanel.repaint();
 	}
 
-	private void updateAllSpriteVisibility()
+	private void updateAllSpriteVisibility(boolean visible)
 	{
+		for (var highlight : spriteTracker.getHighlightList())
+		{
+			highlight.setVisible(visible);
+		}
 	}
 
 	public boolean isSpriteVisible(int spriteId)

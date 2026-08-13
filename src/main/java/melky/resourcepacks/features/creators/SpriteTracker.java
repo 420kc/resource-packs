@@ -122,13 +122,6 @@ public class SpriteTracker implements PluginLifecycleComponent
 		if (spriteOverrides.containsKey(key))
 		{
 			widgets.add(w);
-
-			if (!highlights.containsKey(key))
-			{
-				var override = spriteOverrides.get(key);
-				highlights.put(key, new HighlightOptions(key, override, getColorFromHashCode(override), true));
-				newHighlights = true;
-			}
 		}
 	}
 
@@ -159,11 +152,16 @@ public class SpriteTracker implements PluginLifecycleComponent
 	{
 		for (var s : SpriteOverride.values())
 		{
-			if (s.getSpriteID() != -1)
+			var id = s.getSpriteID();
+			if (id != -1)
 			{
-				spriteOverrides.put(s.getSpriteID(), s);
+				spriteOverrides.put(id, s);
+
+				highlights.put(id, new HighlightOptions(id, s, getColorFromHashCode(s), true));
 			}
 		}
+
+		eventBus.post(new TrackerBuilt());
 	}
 
 	@Override
@@ -171,6 +169,7 @@ public class SpriteTracker implements PluginLifecycleComponent
 	{
 		widgets.clear();
 		spriteOverrides.clear();
+		highlights.clear();
 		newHighlights = false;
 	}
 
