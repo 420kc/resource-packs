@@ -42,6 +42,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import lombok.extern.slf4j.Slf4j;
+import static melky.resourcepacks.features.creators.SpriteTracker.TRACKER_DEFAULT_VISIBLE;
 import melky.resourcepacks.model.SpriteOverride.Folder;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
@@ -53,7 +54,7 @@ public class SpriteTrackerPanel extends PluginPanel
 	private final Map<Folder, SpriteTrackerGroup> groups = new LinkedHashMap<>();
 	private final Map<Integer, SpriteTrackerPanelItem> itemsBySpriteId = new HashMap<>();
 
-	private boolean showAllSprites = true;
+	private boolean showAllSprites = TRACKER_DEFAULT_VISIBLE;
 	private JPanel spriteListPanel;
 
 	@Inject

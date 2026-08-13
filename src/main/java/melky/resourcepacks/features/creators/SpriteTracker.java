@@ -57,6 +57,8 @@ import net.runelite.client.eventbus.Subscribe;
 @Slf4j
 public class SpriteTracker implements PluginLifecycleComponent
 {
+	public static final boolean TRACKER_DEFAULT_VISIBLE = false;
+
 	public enum TitleMode
 	{
 		INLINE,
@@ -157,7 +159,10 @@ public class SpriteTracker implements PluginLifecycleComponent
 			{
 				spriteOverrides.put(id, s);
 
-				highlights.put(id, new HighlightOptions(id, s, getColorFromHashCode(s), true));
+				if (!highlights.containsKey(id))
+				{
+					highlights.put(id, new HighlightOptions(id, s, getColorFromHashCode(s), TRACKER_DEFAULT_VISIBLE));
+				}
 			}
 		}
 
@@ -169,7 +174,6 @@ public class SpriteTracker implements PluginLifecycleComponent
 	{
 		widgets.clear();
 		spriteOverrides.clear();
-		highlights.clear();
 		newHighlights = false;
 	}
 

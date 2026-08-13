@@ -27,9 +27,13 @@ package melky.resourcepacks.features.creators;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Insets;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BorderFactory;
@@ -50,8 +54,10 @@ public class SpriteTrackerGroup extends JPanel
 	private final Folder folder;
 
 	private final TriStateCheckBox groupCheckbox;
+	private final JLabel expandLabel;
 	private final JPanel itemsPanel;
 	private final List<SpriteTrackerPanelItem> items = new ArrayList<>();
+	private boolean collapsed = true;
 
 	public SpriteTrackerGroup(Folder folder)
 	{
@@ -61,9 +67,10 @@ public class SpriteTrackerGroup extends JPanel
 		setBackground(ColorScheme.DARKER_GRAY_COLOR);
 		setAlignmentX(LEFT_ALIGNMENT);
 
-		JPanel header = new JPanel(new BorderLayout());
+		JPanel header = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 0));
 		header.setBackground(ColorScheme.DARK_GRAY_COLOR);
 		header.setBorder(BorderFactory.createEmptyBorder(3, 4, 3, 4));
+		header.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
 		groupCheckbox = new TriStateCheckBox();
 		groupCheckbox.setBackground(ColorScheme.DARK_GRAY_COLOR);
@@ -71,12 +78,31 @@ public class SpriteTrackerGroup extends JPanel
 		groupCheckbox.setFocusPainted(false);
 		groupCheckbox.addActionListener(e -> toggleGroup());
 
+		expandLabel = new JLabel("▶");
+		expandLabel.setForeground(Color.WHITE);
+		expandLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
 		JLabel folderLabel = new JLabel(folder.name());
 		folderLabel.setFont(FontManager.getRunescapeBoldFont());
 		folderLabel.setForeground(Color.WHITE);
+		folderLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
-		header.add(groupCheckbox, BorderLayout.WEST);
-		header.add(folderLabel, BorderLayout.CENTER);
+		MouseAdapter collapseToggle = new MouseAdapter()
+		{
+			@Override
+			public void mousePressed(MouseEvent e)
+			{
+				toggleCollapsed();
+			}
+		};
+
+		header.addMouseListener(collapseToggle);
+		folderLabel.addMouseListener(collapseToggle);
+		expandLabel.addMouseListener(collapseToggle);
+
+		header.add(groupCheckbox);
+		header.add(expandLabel);
+		header.add(folderLabel);
 
 		itemsPanel = new JPanel();
 		itemsPanel.setLayout(new BoxLayout(itemsPanel, BoxLayout.Y_AXIS));
@@ -85,6 +111,8 @@ public class SpriteTrackerGroup extends JPanel
 
 		add(header, BorderLayout.NORTH);
 		add(itemsPanel, BorderLayout.CENTER);
+
+		setCollapsed(true);
 	}
 
 	public void addItem(SpriteTrackerPanelItem item)
@@ -105,6 +133,20 @@ public class SpriteTrackerGroup extends JPanel
 		}
 
 		refreshGroupState();
+	}
+
+	private void toggleCollapsed()
+	{
+		setCollapsed(!collapsed);
+	}
+
+	private void setCollapsed(boolean collapsed)
+	{
+		this.collapsed = collapsed;
+		itemsPanel.setVisible(!collapsed);
+		expandLabel.setText(collapsed ? "▶" : "▼");
+		revalidate();
+		repaint();
 	}
 
 	public void refreshGroupState()
