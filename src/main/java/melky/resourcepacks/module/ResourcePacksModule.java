@@ -34,6 +34,9 @@ import java.util.Set;
 import javax.inject.Named;
 import lombok.extern.slf4j.Slf4j;
 import melky.resourcepacks.ResourcePacksConfig;
+import melky.resourcepacks.features.creators.CreatorToolsModule;
+import melky.resourcepacks.features.creators.SpriteOverlay;
+import melky.resourcepacks.features.creators.SpriteTracker;
 import melky.resourcepacks.features.creators.skillglow.ShowSkillGlow;
 import melky.resourcepacks.features.hub.HubClient;
 import melky.resourcepacks.features.hub.HubPanelModule;
@@ -86,7 +89,10 @@ public class ResourcePacksModule extends AbstractModule
 		ChatColorOverride chatColorOverride,
 		GameFrameOverride gameFrameOverride,
 		ShowSkillGlow showSkillGlow,
-		PackReader packReader
+		PackReader packReader.
+		SpriteTracker spriteTracker,
+		CreatorToolsModule creatorToolsModule,
+		SpriteOverlay spriteOverlay
 	)
 	{
 		var builder = new ImmutableSet.Builder<PluginLifecycleComponent>();
@@ -107,6 +113,9 @@ public class ResourcePacksModule extends AbstractModule
 			.add(chatColorOverride)
 			.add(showSkillGlow)
 			.add(gameFrameOverride)
+			.add(spriteTracker)
+			.add(creatorToolsModule)
+			.add(spriteOverlay)
 			.add(packReader);
 
 		if (developerMode)
