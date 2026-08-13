@@ -89,7 +89,7 @@ public class ResourcePacksModule extends AbstractModule
 		ChatColorOverride chatColorOverride,
 		GameFrameOverride gameFrameOverride,
 		ShowSkillGlow showSkillGlow,
-		PackReader packReader.
+		PackReader packReader,
 		SpriteTracker spriteTracker,
 		CreatorToolsModule creatorToolsModule,
 		SpriteOverlay spriteOverlay
