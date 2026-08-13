@@ -25,41 +25,33 @@
 
 package melky.resourcepacks.features.creators;
 
-import com.google.common.collect.Comparators;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import melky.resourcepacks.model.SpriteOverride;
+import melky.resourcepacks.model.SpriteOverride.Folder;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
-import net.runelite.client.util.SwingUtil;
 
 @Slf4j
 public class SpriteTrackerPanel extends PluginPanel
 {
 	private final SpriteTracker spriteTracker;
-	private final Set<Integer> storedSprites = new HashSet<>();
+	private final Map<Folder, SpriteTrackerGroup> groups = new LinkedHashMap<>();
+	private final Map<Integer, SpriteTrackerPanelItem> itemsBySpriteId = new HashMap<>();
 
 	private boolean showAllSprites = true;
 	private JPanel spriteListPanel;
@@ -78,7 +70,6 @@ public class SpriteTrackerPanel extends PluginPanel
 		add(createToolbar(), BorderLayout.NORTH);
 		add(createSpriteListPanel(), BorderLayout.CENTER);
 
-		// Initialize visibility for all sprites
 		updateAllSpriteVisibility(showAllSprites);
 		updateSpriteList();
 	}
@@ -104,7 +95,6 @@ public class SpriteTrackerPanel extends PluginPanel
 		selectorButton.setFocusPainted(false);
 		selectorButton.setAlignmentX(0.5f);
 		selectorButton.addActionListener(e -> {
-			// Enable sprite selector mode
 			log.info("Sprite selector enabled");
 		});
 
@@ -140,13 +130,25 @@ public class SpriteTrackerPanel extends PluginPanel
 	public void updateSpriteList()
 	{
 		spriteListPanel.removeAll();
-
+		groups.clear();
+		itemsBySpriteId.clear();
 
 		for (var highlight : spriteTracker.getHighlightList())
 		{
-			SpriteTrackerPanelItem item = new SpriteTrackerPanelItem(highlight);
-			spriteListPanel.add(item);
-			storedSprites.add(highlight.getSpriteId());
+			var group = groups.computeIfAbsent(highlight.getOverride().getFolder(), SpriteTrackerGroup::new);
+			var item = new SpriteTrackerPanelItem(highlight);
+			group.addItem(item);
+			itemsBySpriteId.put(highlight.getSpriteId(), item);
+		}
+
+		var sortedFolders = new TreeSet<>(Comparator.comparing(Folder::name));
+		sortedFolders.addAll(groups.keySet());
+
+		for (var folder : sortedFolders)
+		{
+			var group = groups.get(folder);
+			group.refreshGroupState();
+			spriteListPanel.add(group);
 		}
 
 		spriteListPanel.revalidate();
@@ -169,41 +171,36 @@ public class SpriteTrackerPanel extends PluginPanel
 	@Override
 	public void onActivate()
 	{
-		// Panel activated
 	}
 
 	@Override
 	public void onDeactivate()
 	{
-		// Panel deactivated
 	}
 
 	void rebuild()
 	{
-		var highlights = spriteTracker.getHighlightList();
-		for (var highlight: highlights)
+		boolean hasNew = false;
+		for (var highlight : spriteTracker.getHighlightList())
 		{
-			if (storedSprites.contains(highlight.getSpriteId()))
+			if (!itemsBySpriteId.containsKey(highlight.getSpriteId()))
 			{
-				continue;
+				hasNew = true;
+				break;
 			}
-
-
-			var insertIdx = highlights.indexOf(highlight);
-			storedSprites.add(highlight.getSpriteId());
-
-			var item = new SpriteTrackerPanelItem(spriteTracker.getHighlights().get(highlight.getSpriteId()));
-			spriteListPanel.add(item, insertIdx);
 		}
 
-
-		spriteListPanel.revalidate();
-		spriteListPanel.repaint();
+		if (hasNew)
+		{
+			updateSpriteList();
+		}
 	}
 
 	void clear()
 	{
 		spriteListPanel.removeAll();
+		groups.clear();
+		itemsBySpriteId.clear();
 		spriteListPanel.revalidate();
 		spriteListPanel.repaint();
 	}
