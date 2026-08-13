@@ -11,3 +11,6 @@ nbproject/
 plans/
 .kilo/
 tools/
+bin/
+.run
+scripts
