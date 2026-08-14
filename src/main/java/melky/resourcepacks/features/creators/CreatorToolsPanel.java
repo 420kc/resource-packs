@@ -43,6 +43,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 import lombok.extern.slf4j.Slf4j;
+import melky.resourcepacks.features.creators.events.SpritePicked;
 import melky.resourcepacks.features.creators.events.TrackerBuilt;
 import melky.resourcepacks.features.state.LocalConfig;
 import net.runelite.api.Client;
@@ -187,5 +188,11 @@ public class CreatorToolsPanel extends PluginPanel
 	public void onTrackerBuilt(TrackerBuilt event)
 	{
 		spriteTrackerPanel.rebuild();
+	}
+
+	@Subscribe
+	public void onSpritePicked(SpritePicked event)
+	{
+		spriteTrackerPanel.refreshVisibility();
 	}
 }

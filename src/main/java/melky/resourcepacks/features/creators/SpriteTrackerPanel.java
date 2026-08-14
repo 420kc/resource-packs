@@ -43,6 +43,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import lombok.extern.slf4j.Slf4j;
 import static melky.resourcepacks.features.creators.SpriteTracker.TRACKER_DEFAULT_VISIBLE;
+import melky.resourcepacks.features.state.LocalConfig;
 import melky.resourcepacks.model.SpriteOverride.Folder;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
@@ -51,18 +52,21 @@ import net.runelite.client.ui.PluginPanel;
 public class SpriteTrackerPanel extends PluginPanel
 {
 	private final SpriteTracker spriteTracker;
+	private final LocalConfig localConfig;
 	private final Map<Folder, SpriteTrackerGroup> groups = new LinkedHashMap<>();
 	private final Map<Integer, SpriteTrackerPanelItem> itemsBySpriteId = new HashMap<>();
 
 	private boolean showAllSprites = TRACKER_DEFAULT_VISIBLE;
 	private JPanel spriteListPanel;
+	private JButton selectorButton;
 
 	@Inject
-	public SpriteTrackerPanel(SpriteTracker spriteTracker)
+	public SpriteTrackerPanel(SpriteTracker spriteTracker, LocalConfig localConfig)
 	{
 		super(false);
 
 		this.spriteTracker = spriteTracker;
+		this.localConfig = localConfig;
 
 		setLayout(new BorderLayout());
 		setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -92,11 +96,12 @@ public class SpriteTrackerPanel extends PluginPanel
 			updateSpriteList();
 		});
 
-		JButton selectorButton = new JButton("Select Sprite");
+		selectorButton = new JButton(localConfig.getState(SpritePicker.class) ? "Remove Picker" : "Add Picker");
 		selectorButton.setFocusPainted(false);
 		selectorButton.setAlignmentX(0.5f);
 		selectorButton.addActionListener(e -> {
-			log.info("Sprite selector enabled");
+			localConfig.toggleState(SpritePicker.class);
+			selectorButton.setText(localConfig.getState(SpritePicker.class) ? "Remove Picker" : "Add Picker");
 		});
 
 		toolbar.add(toggleAllButton);
@@ -177,6 +182,19 @@ public class SpriteTrackerPanel extends PluginPanel
 	@Override
 	public void onDeactivate()
 	{
+		if (localConfig.getState(SpritePicker.class))
+		{
+			localConfig.setState(SpritePicker.class, false);
+			selectorButton.setText("Add Picker");
+		}
+	}
+
+	public void refreshVisibility()
+	{
+		for (var item : itemsBySpriteId.values())
+		{
+			item.setSelected(item.getOptions().isVisible());
+		}
 	}
 
 	void rebuild()

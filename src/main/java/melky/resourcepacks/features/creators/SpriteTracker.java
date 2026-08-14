@@ -89,28 +89,38 @@ public class SpriteTracker implements PluginLifecycleComponent
 		}
 	}
 
-	@Inject
 	private Client client;
-
-	@Inject
 	private EventBus eventBus;
 
 	@Getter
 	private final Set<Widget> widgets = new LinkedHashSet<>();
 
 	@Getter
-	private final Map<Integer, HighlightOptions> highlights = new ConcurrentHashMap<>();
-
-	private final Map<Integer, SpriteOverride> spriteOverrides = new HashMap<>();
+	private final Map<Integer, HighlightOptions> highlights = new HashMap<>();
 
 	private int ticksSince = 0;
 	private boolean newHighlights = false;
 
+	@Inject
+	public SpriteTracker(Client client, EventBus eventBus)
+	{
+		this.client = client;
+		this.eventBus = eventBus;
+
+		for (var s : SpriteOverride.values())
+		{
+			var id = s.getSpriteID();
+			if (id != -1)
+			{
+				highlights.put(id, new HighlightOptions(id, s, getColorFromHashCode(s), TRACKER_DEFAULT_VISIBLE));
+			}
+		}
+	}
 
 	@Override
 	public boolean isEnabled(ResourcePacksConfig config, LocalConfig localConfig)
 	{
-		return config.developerTools() && localConfig.getState(SpriteOverlay.class);
+		return config.developerTools() && (localConfig.getState(SpriteOverlay.class));
 	}
 
 	public boolean isEmpty()
@@ -121,7 +131,7 @@ public class SpriteTracker implements PluginLifecycleComponent
 	public void computeTracking(Widget w)
 	{
 		Integer key = w.getSpriteId();
-		if (spriteOverrides.containsKey(key))
+		if (highlights.containsKey(key))
 		{
 			widgets.add(w);
 		}
@@ -152,20 +162,6 @@ public class SpriteTracker implements PluginLifecycleComponent
 	@Override
 	public void startUp()
 	{
-		for (var s : SpriteOverride.values())
-		{
-			var id = s.getSpriteID();
-			if (id != -1)
-			{
-				spriteOverrides.put(id, s);
-
-				if (!highlights.containsKey(id))
-				{
-					highlights.put(id, new HighlightOptions(id, s, getColorFromHashCode(s), TRACKER_DEFAULT_VISIBLE));
-				}
-			}
-		}
-
 		eventBus.post(new TrackerBuilt());
 	}
 
@@ -173,7 +169,6 @@ public class SpriteTracker implements PluginLifecycleComponent
 	public void shutDown()
 	{
 		widgets.clear();
-		spriteOverrides.clear();
 		newHighlights = false;
 	}
 

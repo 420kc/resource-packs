@@ -36,6 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 import melky.resourcepacks.ResourcePacksConfig;
 import melky.resourcepacks.features.creators.CreatorToolsModule;
 import melky.resourcepacks.features.creators.SpriteOverlay;
+import melky.resourcepacks.features.creators.SpritePicker;
 import melky.resourcepacks.features.creators.SpriteTracker;
 import melky.resourcepacks.features.creators.skillglow.ShowSkillGlow;
 import melky.resourcepacks.features.hub.HubClient;
@@ -92,7 +93,8 @@ public class ResourcePacksModule extends AbstractModule
 		PackReader packReader,
 		SpriteTracker spriteTracker,
 		CreatorToolsModule creatorToolsModule,
-		SpriteOverlay spriteOverlay
+		SpriteOverlay spriteOverlay,
+		SpritePicker spritePicker
 	)
 	{
 		var builder = new ImmutableSet.Builder<PluginLifecycleComponent>();
@@ -116,6 +118,7 @@ public class ResourcePacksModule extends AbstractModule
 			.add(creatorToolsModule)
 			.add(spriteTracker)
 			.add(spriteOverlay)
+			.add(spritePicker)
 			.add(packReader);
 
 		if (developerMode)
