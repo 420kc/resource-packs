@@ -52,7 +52,7 @@ public class SpriteTrackerPanelItem extends JPanel
 		setBackground(visible ? ColorScheme.DARKER_GRAY_COLOR : ColorScheme.MEDIUM_GRAY_COLOR);
 		setBorder(BorderFactory.createEmptyBorder(2, 5, 2, 5));
 
-		nameLabel = new JLabel(options.getOverride().toPath() + "");
+		nameLabel = new JLabel(options.getOverride().getFileName());
 		nameLabel.setForeground(options.getColor());
 
 		visibleCheckbox = new JCheckBox("", visible);
