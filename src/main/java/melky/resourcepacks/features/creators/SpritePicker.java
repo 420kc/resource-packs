@@ -271,7 +271,7 @@ public class SpritePicker implements PluginLifecycleComponent
 			return;
 		}
 
-		highlight.setVisible(!highlight.isVisible());
+		highlight.setVisible(true);
 		eventBus.post(new SpritePicked());
 	}
 
