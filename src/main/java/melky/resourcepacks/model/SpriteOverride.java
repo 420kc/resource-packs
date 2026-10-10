@@ -2151,10 +2151,16 @@ public enum SpriteOverride
 		this(spriteID, -1, folder);
 	}
 
+	public String getFileName()
+	{
+		var folder = getFolder().toString().toLowerCase();
+		return toString().toLowerCase().replaceFirst(folder.toLowerCase() + "_", "") + ".png";
+	}
+
 	public Path toPath()
 	{
 		var folder = getFolder().toString().toLowerCase();
-		return Path.of(folder, toString().toLowerCase().replaceFirst(folder.toLowerCase() + "_", "") + ".png");
+		return Path.of(folder, getFileName());
 	}
 
 
