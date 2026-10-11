@@ -28,6 +28,7 @@ package melky.resourcepacks.features.creators;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -35,12 +36,11 @@ import java.util.Map;
 import java.util.TreeSet;
 import javax.inject.Inject;
 import javax.swing.BorderFactory;
-import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.Scrollable;
 import lombok.extern.slf4j.Slf4j;
 import static melky.resourcepacks.features.creators.SpriteTracker.TRACKER_DEFAULT_VISIBLE;
 import melky.resourcepacks.features.state.LocalConfig;
@@ -56,9 +56,7 @@ public class SpriteTrackerPanel extends PluginPanel
 	private final Map<Folder, SpriteTrackerGroup> groups = new LinkedHashMap<>();
 	private final Map<Integer, SpriteTrackerPanelItem> itemsBySpriteId = new HashMap<>();
 
-	private boolean showAllSprites = TRACKER_DEFAULT_VISIBLE;
 	private JPanel spriteListPanel;
-	private JButton selectorButton;
 
 	@Inject
 	public SpriteTrackerPanel(SpriteTracker spriteTracker, LocalConfig localConfig)
@@ -69,46 +67,13 @@ public class SpriteTrackerPanel extends PluginPanel
 		this.localConfig = localConfig;
 
 		setLayout(new BorderLayout());
-		setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+		setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
 
-		add(createToolbar(), BorderLayout.NORTH);
 		add(createSpriteListPanel(), BorderLayout.CENTER);
 
-		updateAllSpriteVisibility(showAllSprites);
+		updateAllSpriteVisibility(TRACKER_DEFAULT_VISIBLE);
 		updateSpriteList();
-	}
-
-	private JPanel createToolbar()
-	{
-		JPanel toolbar = new JPanel();
-		toolbar.setLayout(new BoxLayout(toolbar, BoxLayout.Y_AXIS));
-		toolbar.setBackground(ColorScheme.DARK_GRAY_COLOR);
-		toolbar.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
-
-		JButton toggleAllButton = new JButton(showAllSprites ? "Hide All" : "Show All");
-		toggleAllButton.setFocusPainted(false);
-		toggleAllButton.setAlignmentX(0.5f);
-		toggleAllButton.addActionListener(e -> {
-			showAllSprites = !showAllSprites;
-			toggleAllButton.setText(showAllSprites ? "Hide All" : "Show All");
-			updateAllSpriteVisibility(showAllSprites);
-			updateSpriteList();
-		});
-
-		selectorButton = new JButton(localConfig.getState(SpritePicker.class) ? "Remove Picker" : "Add Picker");
-		selectorButton.setFocusPainted(false);
-		selectorButton.setAlignmentX(0.5f);
-		selectorButton.addActionListener(e -> {
-			localConfig.toggleState(SpritePicker.class);
-			selectorButton.setText(localConfig.getState(SpritePicker.class) ? "Remove Picker" : "Add Picker");
-		});
-
-		toolbar.add(toggleAllButton);
-		toolbar.add(Box.createRigidArea(new Dimension(0, 5)));
-		toolbar.add(selectorButton);
-
-		return toolbar;
 	}
 
 	private JPanel createSpriteListPanel()
@@ -120,12 +85,15 @@ public class SpriteTrackerPanel extends PluginPanel
 		titleLabel.setForeground(Color.WHITE);
 		titleLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 0));
 
-		spriteListPanel = new JPanel();
+		spriteListPanel = new WidthTrackingPanel();
 		spriteListPanel.setLayout(new BoxLayout(spriteListPanel, BoxLayout.Y_AXIS));
 		spriteListPanel.setBackground(ColorScheme.DARKER_GRAY_COLOR);
 
 		JScrollPane scrollPane = new JScrollPane(spriteListPanel);
 		scrollPane.setPreferredSize(new Dimension(0, 400));
+		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		scrollPane.setBorder(BorderFactory.createEmptyBorder());
+		scrollPane.getViewport().setBackground(ColorScheme.DARKER_GRAY_COLOR);
 
 		panel.add(titleLabel, BorderLayout.NORTH);
 		panel.add(scrollPane, BorderLayout.CENTER);
@@ -169,6 +137,22 @@ public class SpriteTrackerPanel extends PluginPanel
 		}
 	}
 
+	boolean areAllSpritesVisible()
+	{
+		return spriteTracker.getHighlightList().stream().allMatch(SpriteTracker.HighlightOptions::isVisible);
+	}
+
+	String getVisibilityActionText()
+	{
+		return areAllSpritesVisible() ? "Hide all sprites" : "Show all sprites";
+	}
+
+	void toggleAllSprites()
+	{
+		updateAllSpriteVisibility(!areAllSpritesVisible());
+		updateSpriteList();
+	}
+
 	public boolean isSpriteVisible(int spriteId)
 	{
 		return false;
@@ -185,7 +169,6 @@ public class SpriteTrackerPanel extends PluginPanel
 		if (localConfig.getState(SpritePicker.class))
 		{
 			localConfig.setState(SpritePicker.class, false);
-			selectorButton.setText("Add Picker");
 		}
 	}
 
@@ -223,4 +206,43 @@ public class SpriteTrackerPanel extends PluginPanel
 		spriteListPanel.revalidate();
 		spriteListPanel.repaint();
 	}
+
+	private static class WidthTrackingPanel extends JPanel implements Scrollable
+	{
+		WidthTrackingPanel()
+		{
+			setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+		}
+
+		@Override
+		public Dimension getPreferredScrollableViewportSize()
+		{
+			return new Dimension(0, 400);
+		}
+
+		@Override
+		public boolean getScrollableTracksViewportWidth()
+		{
+			return true;
+		}
+
+		@Override
+		public boolean getScrollableTracksViewportHeight()
+		{
+			return false;
+		}
+
+		@Override
+		public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction)
+		{
+			return 16;
+		}
+
+		@Override
+		public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction)
+		{
+			return orientation == javax.swing.SwingConstants.VERTICAL ? visibleRect.height : visibleRect.width;
+		}
+	}
+
 }

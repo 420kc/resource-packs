@@ -28,6 +28,8 @@ package melky.resourcepacks.features.creators;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -90,22 +92,45 @@ public class CreatorToolsPanel extends PluginPanel
 
 	private JPanel createControlsPanel()
 	{
-		JPanel panel = new JPanel();
-		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+		JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
 		panel.setBackground(ColorScheme.DARK_GRAY_COLOR);
 		panel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
 
-		JButton fileWatcherButton = new JButton("Enable File Watcher");
-		fileWatcherButton.setFocusPainted(false);
-		fileWatcherButton.addActionListener(e -> toggleFileWatcher());
-
-		JButton spriteOverlayButton = new JButton("Toggle Sprite Overlay");
+		JButton spriteOverlayButton = new JButton(new OverlayIcon());
 		spriteOverlayButton.setFocusPainted(false);
+		spriteOverlayButton.setBorderPainted(false);
+		spriteOverlayButton.setContentAreaFilled(false);
+		spriteOverlayButton.setPreferredSize(new Dimension(24, 24));
+		spriteOverlayButton.setToolTipText("Toggle sprite overlay");
 		spriteOverlayButton.addActionListener(e -> toggleSpriteOverlay());
 
-		panel.add(fileWatcherButton);
-		panel.add(Box.createRigidArea(new Dimension(0, 5)));
+		JButton visibilityButton = new JButton(new VisibilityIcon());
+		visibilityButton.setFocusPainted(false);
+		visibilityButton.setBorderPainted(false);
+		visibilityButton.setContentAreaFilled(false);
+		visibilityButton.setPreferredSize(new Dimension(24, 24));
+		visibilityButton.setToolTipText(spriteTrackerPanel.getVisibilityActionText());
+		visibilityButton.addActionListener(e ->
+		{
+			spriteTrackerPanel.toggleAllSprites();
+			visibilityButton.setToolTipText(spriteTrackerPanel.getVisibilityActionText());
+		});
+
+		JButton pickerButton = new JButton(new PickerIcon());
+		pickerButton.setFocusPainted(false);
+		pickerButton.setBorderPainted(false);
+		pickerButton.setContentAreaFilled(false);
+		pickerButton.setPreferredSize(new Dimension(24, 24));
+		pickerButton.setToolTipText(getPickerActionText());
+		pickerButton.addActionListener(e ->
+		{
+			localConfig.toggleState(SpritePicker.class);
+			pickerButton.setToolTipText(getPickerActionText());
+		});
+
 		panel.add(spriteOverlayButton);
+		panel.add(visibilityButton);
+		panel.add(pickerButton);
 
 		return panel;
 	}
@@ -194,5 +219,81 @@ public class CreatorToolsPanel extends PluginPanel
 	public void onSpritePicked(SpritePicked event)
 	{
 		spriteTrackerPanel.refreshVisibility();
+	}
+
+	private String getPickerActionText()
+	{
+		return localConfig.getState(SpritePicker.class) ? "Remove sprite picker" : "Add sprite picker";
+	}
+
+	private static class OverlayIcon implements javax.swing.Icon
+	{
+		@Override
+		public void paintIcon(java.awt.Component component, Graphics graphics, int x, int y)
+		{
+			graphics.setColor(Color.WHITE);
+			graphics.drawRect(x + 2, y + 2, 12, 12);
+			graphics.drawLine(x + 5, y + 8, x + 11, y + 8);
+			graphics.drawLine(x + 8, y + 5, x + 8, y + 11);
+		}
+
+		@Override
+		public int getIconWidth()
+		{
+			return 16;
+		}
+
+		@Override
+		public int getIconHeight()
+		{
+			return 16;
+		}
+	}
+
+	private static class VisibilityIcon implements javax.swing.Icon
+	{
+		@Override
+		public void paintIcon(java.awt.Component component, Graphics graphics, int x, int y)
+		{
+			graphics.setColor(Color.WHITE);
+			graphics.drawOval(x, y + 3, 16, 10);
+			graphics.fillOval(x + 6, y + 6, 5, 5);
+		}
+
+		@Override
+		public int getIconWidth()
+		{
+			return 16;
+		}
+
+		@Override
+		public int getIconHeight()
+		{
+			return 16;
+		}
+	}
+
+	private static class PickerIcon implements javax.swing.Icon
+	{
+		@Override
+		public void paintIcon(java.awt.Component component, Graphics graphics, int x, int y)
+		{
+			graphics.setColor(Color.WHITE);
+			graphics.drawOval(x + 3, y + 3, 10, 10);
+			graphics.drawLine(x + 8, y, x + 8, y + 16);
+			graphics.drawLine(x, y + 8, x + 16, y + 8);
+		}
+
+		@Override
+		public int getIconWidth()
+		{
+			return 16;
+		}
+
+		@Override
+		public int getIconHeight()
+		{
+			return 16;
+		}
 	}
 }

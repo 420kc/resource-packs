@@ -42,7 +42,6 @@ import javax.swing.Icon;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.UIManager;
 import lombok.Getter;
 import melky.resourcepacks.model.SpriteOverride.Folder;
 import net.runelite.client.ui.ColorScheme;
@@ -55,6 +54,7 @@ public class SpriteTrackerGroup extends JPanel
 
 	private final TriStateCheckBox groupCheckbox;
 	private final JLabel expandLabel;
+	private final JLabel countLabel;
 	private final JPanel itemsPanel;
 	private final List<SpriteTrackerPanelItem> items = new ArrayList<>();
 	private boolean collapsed = true;
@@ -67,9 +67,9 @@ public class SpriteTrackerGroup extends JPanel
 		setBackground(ColorScheme.DARKER_GRAY_COLOR);
 		setAlignmentX(LEFT_ALIGNMENT);
 
-		JPanel header = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 0));
+		JPanel header = new JPanel(new BorderLayout(0, 0));
 		header.setBackground(ColorScheme.DARK_GRAY_COLOR);
-		header.setBorder(BorderFactory.createEmptyBorder(3, 4, 3, 4));
+		header.setBorder(BorderFactory.createEmptyBorder(2, 3, 2, 3));
 		header.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
 		groupCheckbox = new TriStateCheckBox();
@@ -80,12 +80,27 @@ public class SpriteTrackerGroup extends JPanel
 
 		expandLabel = new JLabel("▶");
 		expandLabel.setForeground(Color.WHITE);
+		expandLabel.setFont(expandLabel.getFont().deriveFont(10f));
+		expandLabel.setPreferredSize(new Dimension(12, 12));
+		expandLabel.setMinimumSize(new Dimension(12, 12));
+		expandLabel.setMaximumSize(new Dimension(12, 12));
 		expandLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		groupCheckbox.setIcon(new SmallCheckBoxIcon(false));
+		groupCheckbox.setSelectedIcon(new SmallCheckBoxIcon(true));
+		Dimension checkboxDimension = new Dimension(14, 14);
+		groupCheckbox.setPreferredSize(checkboxDimension);
+		groupCheckbox.setMinimumSize(checkboxDimension);
+		groupCheckbox.setMaximumSize(checkboxDimension);
 
 		JLabel folderLabel = new JLabel(folder.name());
 		folderLabel.setFont(FontManager.getRunescapeBoldFont());
 		folderLabel.setForeground(Color.WHITE);
 		folderLabel.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		folderLabel.setToolTipText(folder.name());
+
+		countLabel = new JLabel();
+		countLabel.setForeground(ColorScheme.MEDIUM_GRAY_COLOR);
+		countLabel.setHorizontalAlignment(JLabel.RIGHT);
 
 		MouseAdapter collapseToggle = new MouseAdapter()
 		{
@@ -100,14 +115,18 @@ public class SpriteTrackerGroup extends JPanel
 		folderLabel.addMouseListener(collapseToggle);
 		expandLabel.addMouseListener(collapseToggle);
 
-		header.add(groupCheckbox);
-		header.add(expandLabel);
-		header.add(folderLabel);
+		JPanel leading = new JPanel(new FlowLayout(FlowLayout.LEFT, 1, 0));
+		leading.setOpaque(false);
+		leading.add(groupCheckbox);
+		leading.add(expandLabel);
+		header.add(leading, BorderLayout.WEST);
+		header.add(folderLabel, BorderLayout.CENTER);
+		header.add(countLabel, BorderLayout.EAST);
 
 		itemsPanel = new JPanel();
 		itemsPanel.setLayout(new BoxLayout(itemsPanel, BoxLayout.Y_AXIS));
 		itemsPanel.setBackground(ColorScheme.DARKER_GRAY_COLOR);
-		itemsPanel.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 0));
+		itemsPanel.setBorder(BorderFactory.createEmptyBorder());
 
 		add(header, BorderLayout.NORTH);
 		add(itemsPanel, BorderLayout.CENTER);
@@ -156,6 +175,7 @@ public class SpriteTrackerGroup extends JPanel
 
 		groupCheckbox.setSelected(allSelected);
 		groupCheckbox.setIndeterminate(!allSelected && anySelected);
+		countLabel.setText(items.stream().filter(SpriteTrackerPanelItem::isSelected).count() + "/" + items.size());
 	}
 
 	@Override
@@ -205,8 +225,42 @@ public class SpriteTrackerGroup extends JPanel
 
 		private static int getCheckBoxIconSize()
 		{
-			Icon icon = UIManager.getIcon("CheckBox.icon");
-			return icon == null ? 13 : icon.getIconWidth();
+			return 12;
+		}
+	}
+
+	private static class SmallCheckBoxIcon implements Icon
+	{
+		private final boolean selected;
+
+		SmallCheckBoxIcon(boolean selected)
+		{
+			this.selected = selected;
+		}
+
+		@Override
+		public void paintIcon(java.awt.Component component, Graphics graphics, int x, int y)
+		{
+			graphics.setColor(ColorScheme.MEDIUM_GRAY_COLOR);
+			graphics.drawRect(x, y, getIconWidth() - 1, getIconHeight() - 1);
+			if (selected)
+			{
+				graphics.setColor(Color.WHITE);
+				graphics.drawLine(x + 2, y + 5, x + 4, y + 7);
+				graphics.drawLine(x + 4, y + 7, x + 8, y + 2);
+			}
+		}
+
+		@Override
+		public int getIconWidth()
+		{
+			return 12;
+		}
+
+		@Override
+		public int getIconHeight()
+		{
+			return 10;
 		}
 	}
 }
