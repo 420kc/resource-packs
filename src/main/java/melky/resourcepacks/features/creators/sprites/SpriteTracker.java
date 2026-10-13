@@ -23,7 +23,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package melky.resourcepacks.features.creators;
+package melky.resourcepacks.features.creators.sprites;
 
 import java.awt.Color;
 import java.util.ArrayList;

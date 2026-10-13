@@ -1,5 +1,8 @@
 /*
  * Copyright (c) 2025, Ron Young <https://github.com/raiyni>
+ * Copyright (c) 2018 Abex
+ * Copyright (c) 2017, Kronos <https://github.com/KronosDesign>
+ * Copyright (c) 2017, Adam <Adam@sigterm.info>
  * All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -23,44 +26,37 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package melky.resourcepacks.features.creators;
+package melky.resourcepacks.features.creators.sprites;
 
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
-import melky.resourcepacks.ResourcePacksConfig;
-import melky.resourcepacks.event.ComponentStateChanged;
-import melky.resourcepacks.features.state.LocalConfig;
-import melky.resourcepacks.module.PluginLifecycleComponent;
 import net.runelite.api.Client;
+import net.runelite.api.MenuEntry;
 import net.runelite.api.gameval.InterfaceID;
 import net.runelite.api.widgets.Widget;
-import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
 
 @Singleton
-@Slf4j
-public class SpriteOverlay extends Overlay implements PluginLifecycleComponent
+public class SpritePickerOverlay extends Overlay
 {
-	private EventBus eventBus;
-	private Client client;
-	private SpriteTracker spriteTracker;
+	private final Client client;
+	private final SpriteTracker spriteTracker;
+	private final SpritePicker picker;
 
 	@Inject
-	public SpriteOverlay(
+	public SpritePickerOverlay(
 		Client client,
-		EventBus eventBus,
-		SpriteTracker spriteTracker
+		SpriteTracker spriteTracker,
+		SpritePicker picker
 	)
 	{
 		this.client = client;
-		this.eventBus = eventBus;
 		this.spriteTracker = spriteTracker;
+		this.picker = picker;
 
 		setPosition(OverlayPosition.DYNAMIC);
 		setLayer(OverlayLayer.ABOVE_WIDGETS);
@@ -69,82 +65,53 @@ public class SpriteOverlay extends Overlay implements PluginLifecycleComponent
 	}
 
 	@Override
-	public boolean isEnabled(ResourcePacksConfig config, LocalConfig localConfig)
-	{
-		return config.developerTools() && localConfig.getState(this.getClass());
-	}
-
-	@Override
 	public Dimension render(Graphics2D g)
 	{
-		if (spriteTracker.isEmpty())
+		if (!picker.isPickerSelected())
 		{
 			return null;
 		}
 
-		for (var w : spriteTracker.getWidgets())
+		boolean menuOpen = client.isMenuOpen();
+
+		MenuEntry[] entries = client.getMenu().getMenuEntries();
+		for (int i = menuOpen ? 0 : entries.length - 1; i < entries.length; i++)
 		{
-			if (w.isHidden() || w.isHidden())
+			MenuEntry e = entries[i];
+
+			Widget w = picker.getWidgetForMenuOption(e.getType(), e.getParam0(), e.getParam1());
+			if (w == null)
 			{
 				continue;
 			}
 
-			renderWidget(g, w);
+			var highlight = spriteTracker.getHighlight(w.getSpriteId());
+			if (highlight == null)
+			{
+				continue;
+			}
+
+			renderWidget(g, w, highlight);
 		}
 
 		return null;
 	}
 
-
-	private void renderWidget(Graphics2D g, Widget w)
+	private void renderWidget(Graphics2D g, Widget w, SpriteTracker.HighlightOptions highlight)
 	{
-		var highlight = spriteTracker.getHighlight(w.getSpriteId());
-		if (highlight == null || !highlight.isVisible())
-		{
-			return;
-		}
-
-		var p = w.getBounds();
-		if (p == null)
+		var bounds = w.getBounds();
+		if (bounds == null)
 		{
 			return;
 		}
 
 		g.setColor(highlight.getColor());
-		var parent = w.getParent();
-		if (parent != null)
+		g.draw(bounds);
+
+		var canvas = w.getCanvasLocation();
+		if (canvas != null)
 		{
-			var b = parent.getBounds();
-			if (b != null && b.contains(p.getX(), p.getY()))
-			{
-				g.draw(w.getBounds());
-				renderName(g, w, highlight);
-			}
+			g.drawString(highlight.getOverride().toString(), canvas.getX(), canvas.getY());
 		}
-		else
-		{
-			g.draw(w.getBounds());
-			renderName(g, w, highlight);
-		}
-	}
-
-	private void renderName(Graphics2D g, Widget w, SpriteTracker.HighlightOptions opt)
-	{
-		var p = w.getCanvasLocation();
-		var o = opt.getOverride();
-
-		g.drawString(o.toString(), p.getX(), p.getY());
-	}
-
-	@Override
-	public void startUp()
-	{
-
-	}
-
-	@Override
-	public void shutDown()
-	{
-
 	}
 }

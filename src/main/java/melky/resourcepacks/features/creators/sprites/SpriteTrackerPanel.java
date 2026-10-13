@@ -23,7 +23,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package melky.resourcepacks.features.creators;
+package melky.resourcepacks.features.creators.sprites;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -42,7 +42,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.Scrollable;
 import lombok.extern.slf4j.Slf4j;
-import static melky.resourcepacks.features.creators.SpriteTracker.TRACKER_DEFAULT_VISIBLE;
+import static melky.resourcepacks.features.creators.sprites.SpriteTracker.TRACKER_DEFAULT_VISIBLE;
 import melky.resourcepacks.features.state.LocalConfig;
 import melky.resourcepacks.model.SpriteOverride.Folder;
 import net.runelite.client.ui.ColorScheme;
@@ -142,12 +142,12 @@ public class SpriteTrackerPanel extends PluginPanel
 		return spriteTracker.getHighlightList().stream().allMatch(SpriteTracker.HighlightOptions::isVisible);
 	}
 
-	String getVisibilityActionText()
+	public String getVisibilityActionText()
 	{
 		return areAllSpritesVisible() ? "Hide all sprites" : "Show all sprites";
 	}
 
-	void toggleAllSprites()
+	public void toggleAllSprites()
 	{
 		updateAllSpriteVisibility(!areAllSpritesVisible());
 		updateSpriteList();
@@ -180,7 +180,7 @@ public class SpriteTrackerPanel extends PluginPanel
 		}
 	}
 
-	void rebuild()
+	public void rebuild()
 	{
 		boolean hasNew = false;
 		for (var highlight : spriteTracker.getHighlightList())
