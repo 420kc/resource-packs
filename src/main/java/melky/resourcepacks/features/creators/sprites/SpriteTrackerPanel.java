@@ -109,7 +109,8 @@ public class SpriteTrackerPanel extends PluginPanel
 
 		for (var highlight : spriteTracker.getHighlightList())
 		{
-			var group = groups.computeIfAbsent(highlight.getOverride().getFolder(), SpriteTrackerGroup::new);
+			var group = groups.computeIfAbsent(highlight.getOverride().getFolder(), folder ->
+				new SpriteTrackerGroup(folder, this::onSpriteVisibilityChanged));
 			var item = new SpriteTrackerPanelItem(highlight);
 			group.addItem(item);
 			itemsBySpriteId.put(highlight.getSpriteId(), item);
@@ -129,12 +130,21 @@ public class SpriteTrackerPanel extends PluginPanel
 		spriteListPanel.repaint();
 	}
 
+	private void onSpriteVisibilityChanged(boolean visible)
+	{
+		if (visible && !localConfig.getState(SpriteOverlay.class))
+		{
+			localConfig.setState(SpriteOverlay.class, true);
+		}
+	}
+
 	private void updateAllSpriteVisibility(boolean visible)
 	{
 		for (var highlight : spriteTracker.getHighlightList())
 		{
 			highlight.setVisible(visible);
 		}
+		onSpriteVisibilityChanged(visible);
 	}
 
 	boolean areAllSpritesVisible()

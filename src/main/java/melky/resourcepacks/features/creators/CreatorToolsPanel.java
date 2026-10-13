@@ -93,6 +93,7 @@ public class CreatorToolsPanel extends PluginPanel
 	{
 		JPanel panel = new JPanel(new BorderLayout());
 		panel.setBackground(ColorScheme.DARK_GRAY_COLOR);
+		panel.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
 		panel.add(createControlsPanel(), BorderLayout.NORTH);
 		panel.add(spriteTrackerPanel, BorderLayout.CENTER);
 		return panel;
@@ -102,6 +103,7 @@ public class CreatorToolsPanel extends PluginPanel
 	{
 		JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
 		panel.setBackground(ColorScheme.DARK_GRAY_COLOR);
+		panel.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
 
 		DevToolsButton skillGlowButton = new DevToolsButton("Skill Glow");
 		skillGlowButton.setActive(localConfig.getState(SkillGlow.class));

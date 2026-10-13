@@ -36,6 +36,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
@@ -57,11 +58,20 @@ public class SpriteTrackerGroup extends JPanel
 	private final JLabel countLabel;
 	private final JPanel itemsPanel;
 	private final List<SpriteTrackerPanelItem> items = new ArrayList<>();
+	private final Consumer<Boolean> onVisibilityChanged;
 	private boolean collapsed = true;
 
 	public SpriteTrackerGroup(Folder folder)
 	{
+		this(folder, visible ->
+		{
+		});
+	}
+
+	public SpriteTrackerGroup(Folder folder, Consumer<Boolean> onVisibilityChanged)
+	{
 		this.folder = folder;
+		this.onVisibilityChanged = onVisibilityChanged;
 
 		setLayout(new BorderLayout());
 		setBackground(ColorScheme.DARKER_GRAY_COLOR);
@@ -138,7 +148,11 @@ public class SpriteTrackerGroup extends JPanel
 	{
 		items.add(item);
 		itemsPanel.add(item);
-		item.setOnVisibilityChanged(this::refreshGroupState);
+		item.setOnVisibilityChanged(() ->
+		{
+			refreshGroupState();
+			onVisibilityChanged.accept(item.isSelected());
+		});
 	}
 
 	private void toggleGroup()
