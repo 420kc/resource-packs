@@ -142,11 +142,6 @@ public class SpriteTrackerPanel extends PluginPanel
 		return spriteTracker.getHighlightList().stream().allMatch(SpriteTracker.HighlightOptions::isVisible);
 	}
 
-	public String getVisibilityActionText()
-	{
-		return areAllSpritesVisible() ? "Hide all sprites" : "Show all sprites";
-	}
-
 	public void toggleAllSprites()
 	{
 		updateAllSpriteVisibility(!areAllSpritesVisible());
