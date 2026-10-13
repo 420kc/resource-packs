@@ -26,21 +26,12 @@
 package melky.resourcepacks.features.creators;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.image.BufferedImage;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.WatchService;
 
 import javax.inject.Inject;
 import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.JButton;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 
 import lombok.extern.slf4j.Slf4j;
 import melky.resourcepacks.features.creators.events.SpritePicked;
@@ -48,11 +39,14 @@ import melky.resourcepacks.features.creators.events.TrackerBuilt;
 import melky.resourcepacks.features.creators.sprites.SpriteOverlay;
 import melky.resourcepacks.features.creators.sprites.SpritePicker;
 import melky.resourcepacks.features.creators.sprites.SpriteTrackerPanel;
+import melky.resourcepacks.features.creators.skillglow.SkillGlow;
 import melky.resourcepacks.features.state.LocalConfig;
 import net.runelite.api.Client;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.ui.ColorScheme;
 import net.runelite.client.ui.PluginPanel;
+import net.runelite.client.ui.components.materialtabs.MaterialTab;
+import net.runelite.client.ui.components.materialtabs.MaterialTabGroup;
 
 @Slf4j
 public class CreatorToolsPanel extends PluginPanel
@@ -81,8 +75,40 @@ public class CreatorToolsPanel extends PluginPanel
 		setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 		setBackground(ColorScheme.DARK_GRAY_COLOR);
 
-		add(createControlsPanel(), BorderLayout.NORTH);
-		add(spriteTrackerPanel, BorderLayout.CENTER);
+		JPanel tabDisplay = new JPanel(new BorderLayout());
+		tabDisplay.setBackground(ColorScheme.DARK_GRAY_COLOR);
+
+		MaterialTabGroup tabGroup = new MaterialTabGroup(tabDisplay);
+		MaterialTab packToolsTab = new MaterialTab("Pack", tabGroup, createPackToolsPanel());
+		MaterialTab spriteToolsTab = new MaterialTab("Sprites", tabGroup, createSpriteToolsPanel());
+		tabGroup.addTab(packToolsTab);
+		tabGroup.addTab(spriteToolsTab);
+		tabGroup.select(packToolsTab);
+
+		add(tabGroup, BorderLayout.NORTH);
+		add(tabDisplay, BorderLayout.CENTER);
+	}
+
+	private JPanel createSpriteToolsPanel()
+	{
+		JPanel panel = new JPanel(new BorderLayout());
+		panel.setBackground(ColorScheme.DARK_GRAY_COLOR);
+		panel.add(createControlsPanel(), BorderLayout.NORTH);
+		panel.add(spriteTrackerPanel, BorderLayout.CENTER);
+		return panel;
+	}
+
+	private JPanel createPackToolsPanel()
+	{
+		JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+		panel.setBackground(ColorScheme.DARK_GRAY_COLOR);
+
+		DevToolsButton skillGlowButton = new DevToolsButton("Skill Glow");
+		skillGlowButton.setActive(localConfig.getState(SkillGlow.class));
+		skillGlowButton.addActionListener(e -> localConfig.toggleState(SkillGlow.class));
+		panel.add(skillGlowButton);
+
+		return panel;
 	}
 
 	private JPanel createControlsPanel()

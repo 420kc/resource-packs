@@ -38,7 +38,7 @@ import melky.resourcepacks.features.creators.CreatorToolsModule;
 import melky.resourcepacks.features.creators.sprites.SpriteOverlay;
 import melky.resourcepacks.features.creators.sprites.SpritePicker;
 import melky.resourcepacks.features.creators.sprites.SpriteTracker;
-import melky.resourcepacks.features.creators.skillglow.ShowSkillGlow;
+import melky.resourcepacks.features.creators.skillglow.SkillGlow;
 import melky.resourcepacks.features.hub.HubClient;
 import melky.resourcepacks.features.hub.HubPanelModule;
 import melky.resourcepacks.features.overrides.ChatColorOverride;
@@ -89,7 +89,7 @@ public class ResourcePacksModule extends AbstractModule
 		OverlayColorOverride overlayColorOverride,
 		ChatColorOverride chatColorOverride,
 		GameFrameOverride gameFrameOverride,
-		ShowSkillGlow showSkillGlow,
+		SkillGlow showSkillGlow,
 		PackReader packReader,
 		SpriteTracker spriteTracker,
 		CreatorToolsModule creatorToolsModule,
