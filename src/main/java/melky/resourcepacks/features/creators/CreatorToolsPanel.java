@@ -30,23 +30,20 @@ import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-
 import javax.inject.Inject;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JPanel;
-
 import lombok.extern.slf4j.Slf4j;
 import melky.resourcepacks.event.ReloadPack;
 import melky.resourcepacks.features.creators.events.SpritePicked;
 import melky.resourcepacks.features.creators.events.TrackerBuilt;
+import melky.resourcepacks.features.creators.skillglow.SkillGlow;
 import melky.resourcepacks.features.creators.sprites.SpriteOverlay;
 import melky.resourcepacks.features.creators.sprites.SpritePicker;
 import melky.resourcepacks.features.creators.sprites.SpriteTrackerPanel;
-import melky.resourcepacks.features.creators.skillglow.SkillGlow;
 import melky.resourcepacks.features.state.LocalConfig;
 import net.runelite.api.Client;
-import net.runelite.api.WidgetNode;
 import net.runelite.api.gameval.InterfaceID;
 import net.runelite.api.widgets.WidgetModalMode;
 import net.runelite.client.callback.ClientThread;
@@ -73,13 +70,7 @@ public class CreatorToolsPanel extends PluginPanel
 	private final SpriteTrackerPanel spriteTrackerPanel;
 
 	@Inject
-	public CreatorToolsPanel(
-		Client client,
-		ClientThread clientThread,
-		EventBus eventBus,
-		LocalConfig localConfig,
-		SpriteTrackerPanel spriteTrackerPanel
-	)
+	public CreatorToolsPanel(Client client, ClientThread clientThread, EventBus eventBus, LocalConfig localConfig, SpriteTrackerPanel spriteTrackerPanel)
 	{
 		super(false);
 		this.client = client;
@@ -160,10 +151,7 @@ public class CreatorToolsPanel extends PluginPanel
 		clientThread.invokeLater(() ->
 		{
 			int componentId = (client.getTopLevelInterfaceId() << 16) | (client.isResized() ? 13 : 43);
-			client.openInterface(
-				componentId,
-				InterfaceID.NOTIFICATION_DISPLAY,
-				WidgetModalMode.MODAL_CLICKTHROUGH);
+			client.openInterface(componentId, InterfaceID.NOTIFICATION_DISPLAY, WidgetModalMode.MODAL_CLICKTHROUGH);
 			String title = ColorUtil.wrapWithColorTag("Collection Log", JagexColors.DARK_ORANGE_INTERFACE_TEXT);
 			String description = "New collection log item:<br><br><col=ffffff>Sample reward</col>";
 			client.runScript(3343, title, description, -1);
